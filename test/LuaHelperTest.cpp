@@ -31,6 +31,7 @@ TEST(LuaHelper, IsIdentifier)
     EXPECT_EQ(false, IsLuaIdentifier("a b"));
 }
 
+#if 0
 TEST(LuaHelper, BuildString)
 {
     EXPECT_EQ("\"\"", LuaHelper::BuildString(""));
@@ -136,3 +137,4 @@ TEST(LuaHelper, BuildValue)
 
     lua_close(L);
 }
+#endif

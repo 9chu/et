@@ -16,8 +16,10 @@
 
 #ifndef _MSC_VER
 #define ET_C_FORMAT_DECL(start, args) __attribute__((format(printf, start, args)))
+#define ET_EXPORT_API
 #else
 #define ET_C_FORMAT_DECL(start, args)
+#define ET_EXPORT_API __declspec(dllexport)
 #endif
 
 #define ET_THROW(exception, format, ...) \

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.1)
 project(lua C)
 
 set(LUA_C_FLAGS "-DLUA_COMPAT_BITLIB" CACHE STRING "Extra C Flags for Lua")
@@ -24,3 +24,7 @@ list(REMOVE_ITEM LUA_LIB_SRCS ${LUA_INTERPRETER} ${LUA_COMPILER})
 add_library(lua SHARED ${LUA_LIB_SRCS})
 target_include_directories(lua PUBLIC src)
 target_link_libraries(lua ${LUA_LIBRARIES})
+
+add_library(lua-static STATIC ${LUA_LIB_SRCS})
+target_include_directories(lua-static PUBLIC src)
+target_link_libraries(lua-static ${LUA_LIBRARIES})
