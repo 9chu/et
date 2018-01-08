@@ -12,23 +12,23 @@ using namespace et;
 
 TEST(LuaHelper, IsIdentifier)
 {
-    EXPECT_EQ(true, LuaHelper::IsIdentifier("a"));
-    EXPECT_EQ(true, LuaHelper::IsIdentifier("z"));
-    EXPECT_EQ(true, LuaHelper::IsIdentifier("A"));
-    EXPECT_EQ(true, LuaHelper::IsIdentifier("Z"));
-    EXPECT_EQ(true, LuaHelper::IsIdentifier("_"));
-    EXPECT_EQ(true, LuaHelper::IsIdentifier("_a"));
-    EXPECT_EQ(true, LuaHelper::IsIdentifier("_z"));
-    EXPECT_EQ(true, LuaHelper::IsIdentifier("_A"));
-    EXPECT_EQ(true, LuaHelper::IsIdentifier("_Z"));
-    EXPECT_EQ(true, LuaHelper::IsIdentifier("_0"));
-    EXPECT_EQ(true, LuaHelper::IsIdentifier("_9"));
+    EXPECT_EQ(true, IsLuaIdentifier("a"));
+    EXPECT_EQ(true, IsLuaIdentifier("z"));
+    EXPECT_EQ(true, IsLuaIdentifier("A"));
+    EXPECT_EQ(true, IsLuaIdentifier("Z"));
+    EXPECT_EQ(true, IsLuaIdentifier("_"));
+    EXPECT_EQ(true, IsLuaIdentifier("_a"));
+    EXPECT_EQ(true, IsLuaIdentifier("_z"));
+    EXPECT_EQ(true, IsLuaIdentifier("_A"));
+    EXPECT_EQ(true, IsLuaIdentifier("_Z"));
+    EXPECT_EQ(true, IsLuaIdentifier("_0"));
+    EXPECT_EQ(true, IsLuaIdentifier("_9"));
 
-    EXPECT_EQ(false, LuaHelper::IsIdentifier(""));
-    EXPECT_EQ(false, LuaHelper::IsIdentifier("0"));
-    EXPECT_EQ(false, LuaHelper::IsIdentifier("9"));
-    EXPECT_EQ(false, LuaHelper::IsIdentifier("a "));
-    EXPECT_EQ(false, LuaHelper::IsIdentifier("a b"));
+    EXPECT_EQ(false, IsLuaIdentifier(""));
+    EXPECT_EQ(false, IsLuaIdentifier("0"));
+    EXPECT_EQ(false, IsLuaIdentifier("9"));
+    EXPECT_EQ(false, IsLuaIdentifier("a "));
+    EXPECT_EQ(false, IsLuaIdentifier("a b"));
 }
 
 TEST(LuaHelper, BuildString)

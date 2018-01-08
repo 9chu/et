@@ -16,7 +16,6 @@ using namespace et;
     TemplateParser parser; \
     parser.Run(reader);
 
-
 TEST(TemplateParserTest, ParseOuter)
 {
     {
@@ -132,6 +131,14 @@ TEST(TemplateParserTest, ParseInner)
     }
 
     {
+        DO_PARSE("{% end %}");
+        EXPECT_EQ(1ull, parser.GetTokenCount());
+        EXPECT_EQ(TemplateParser::TokenTypes::End, parser.GetTokenByIndex(0).Type);
+        EXPECT_EQ(0ull, parser.GetTokenByIndex(0).Args.size());
+        EXPECT_EQ("", parser.GetTokenByIndex(0).Content);
+    }
+
+    {
         DO_PARSE("{% if x%}");
         EXPECT_EQ(1ull, parser.GetTokenCount());
         EXPECT_EQ(TemplateParser::TokenTypes::If, parser.GetTokenByIndex(0).Type);
@@ -148,11 +155,11 @@ TEST(TemplateParserTest, ParseInner)
     }
 
     {
-        DO_PARSE("{% else 1%}");
+        DO_PARSE("{% else %}");
         EXPECT_EQ(1ull, parser.GetTokenCount());
         EXPECT_EQ(TemplateParser::TokenTypes::Else, parser.GetTokenByIndex(0).Type);
         EXPECT_EQ(0ull, parser.GetTokenByIndex(0).Args.size());
-        EXPECT_EQ("1", parser.GetTokenByIndex(0).Content);
+        EXPECT_EQ("", parser.GetTokenByIndex(0).Content);
     }
 
     {
@@ -206,6 +213,14 @@ TEST(TemplateParserTest, ParseInner)
         EXPECT_EQ("a", parser.GetTokenByIndex(0).Args[0]);
         EXPECT_EQ("b", parser.GetTokenByIndex(0).Args[1]);
         EXPECT_EQ("c", parser.GetTokenByIndex(0).Content);
+    }
+
+    {
+        EXPECT_THROW(DO_PARSE("{% end x %}"), ParseErrorException);
+    }
+
+    {
+        EXPECT_THROW(DO_PARSE("{% else x %}"), ParseErrorException);
     }
 
     {

@@ -13,21 +13,6 @@ namespace et
     namespace LuaHelper
     {
         /**
-         * @brief 检查值是否是Lua的标识符
-         * @param raw 原始字符串
-         * @return 是否是标识符
-         */
-        bool IsIdentifier(const char* raw)noexcept;
-
-        /**
-         * @brief 检查给定的值是否是Lua的关键词
-         * @param raw 字符串
-         * @return 是否是关键词
-         */
-        bool IsKeyword(const char* raw)noexcept;
-        bool IsKeyword(const std::string& raw)noexcept;
-
-        /**
          * @brief 字符串转为Lua字面量
          * @param raw 原始字符串
          * @return 转义结果

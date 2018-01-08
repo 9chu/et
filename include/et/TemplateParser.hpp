@@ -30,6 +30,7 @@ namespace et
             Eof,
             Literal,
             Expression,
+            End,
             If,
             Else,
             ElseIf,
@@ -43,7 +44,7 @@ namespace et
         struct Token
         {
             TokenTypes Type = TokenTypes::Eof;
-            std::string Content;
+            std::string Content;  // 表达式或者文本内容
             std::vector<std::string> Args;
             TextReader::Anchor Anchor;
         };
@@ -93,6 +94,7 @@ namespace et
          * @return 若索引越界，会返回一个EOF的Token（正常情况下EOF的Token不会在TokenList中出现）
          */
         const Token& GetTokenByIndex(size_t index)const noexcept;
+        Token& GetTokenByIndex(size_t index)noexcept;
 
         /**
          * @brief 清空Token列表

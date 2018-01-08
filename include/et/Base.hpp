@@ -38,6 +38,21 @@
 namespace et
 {
     /**
+     * @brief 检查值是否是Lua的标识符
+     * @param raw 原始字符串
+     * @return 是否是标识符
+     */
+    bool IsLuaIdentifier(const char* raw)noexcept;
+
+    /**
+     * @brief 检查给定的值是否是Lua的关键词
+     * @param raw 字符串
+     * @return 是否是关键词
+     */
+    bool IsLuaKeyword(const char* raw)noexcept;
+    bool IsLuaKeyword(const std::string& raw)noexcept;
+
+    /**
      * @brief 格式化文本
      * @param format 格式化参数
      * @param ... 参数列表
@@ -58,6 +73,25 @@ namespace et
      * @param str 字符串
      */
     void TrimEnd(std::string& str)noexcept;
+
+    /**
+     * @brief 获取文件名
+     * @param path 路径
+     * @return 文件名
+     *
+     * 该方法用于获取路径中文件的文件名
+     * 允许以'/'和'\'作路径分隔符
+     * 若最后以'/'或'\'结尾则被认定为文件夹，返回空值
+     */
+    std::string GetFileName(const char* path);
+
+    /**
+     * @brief 读取文件
+     * @exception IOException 如果出现I/O错误将会抛出异常
+     * @param out 输出
+     * @param path 文件路径
+     */
+    void ReadFile(std::string& out, const char* path);
 
     /**
      * @brief 异常基类
@@ -90,5 +124,7 @@ namespace et
         std::shared_ptr<std::string> m_pDescription;
     };
 
+    ET_DEFINE_EXCEPTION(InvalidCallException);
     ET_DEFINE_EXCEPTION(InvalidArgumentException);
+    ET_DEFINE_EXCEPTION(IOException);
 }

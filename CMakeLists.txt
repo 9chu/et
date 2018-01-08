@@ -9,7 +9,7 @@ endif ()
 
 file(GLOB_RECURSE ET_SRC include/*.hpp src/*.cpp)
 
-add_library(et STATIC ${ET_SRC})
+add_library(et SHARED ${ET_SRC})
 target_link_libraries(et lua)
 target_include_directories(et PUBLIC include)
 

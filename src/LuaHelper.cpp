@@ -10,95 +10,17 @@
 using namespace std;
 using namespace et;
 
-namespace
-{
-    class KeywordList
-    {
-    public:
-        KeywordList()
-        {
-            m_stList.emplace("and");
-            m_stList.emplace("false");
-            m_stList.emplace("local");
-            m_stList.emplace("then");
-            m_stList.emplace("break");
-            m_stList.emplace("for");
-            m_stList.emplace("nil");
-            m_stList.emplace("true");
-            m_stList.emplace("do");
-            m_stList.emplace("function");
-            m_stList.emplace("not");
-            m_stList.emplace("until");
-            m_stList.emplace("else");
-            m_stList.emplace("goto");
-            m_stList.emplace("or");
-            m_stList.emplace("while");
-            m_stList.emplace("elseif");
-            m_stList.emplace("if");
-            m_stList.emplace("repeat");
-            m_stList.emplace("end");
-            m_stList.emplace("in");
-            m_stList.emplace("return");
-        }
-
-    public:
-        bool operator()(const std::string& test)const noexcept
-        {
-            return m_stList.find(test) != m_stList.end();
-        }
-
-        bool operator()(const char* test)const noexcept
-        {
-            return m_stList.find(test) != m_stList.end();
-        }
-
-    private:
-        set<string> m_stList;
-    };
-}
-
-bool LuaHelper::IsIdentifier(const char* raw)noexcept
-{
-    auto len = strlen(raw);
-    if (len == 0)
-        return false;
-
-    for (size_t i = 0; i < len; ++i)
-    {
-        auto ch = raw[i];
-
-        if (!((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch == '_' || (i > 0 && ch >= '0' && ch <= '9')))
-            return false;
-    }
-
-    return true;
-}
-
-bool LuaHelper::IsKeyword(const char* raw)noexcept
-{
-    static const KeywordList kKeywords {};
-
-    return kKeywords(raw);
-}
-
-bool LuaHelper::IsKeyword(const std::string& raw)noexcept
-{
-    static const KeywordList kKeywords {};
-
-    return kKeywords(raw);
-}
-
 std::string LuaHelper::BuildString(const char* raw)
 {
     string ret;
-    auto len = strlen(raw);
+    size_t len = strlen(raw);
 
     ret.reserve(len + 2);
     ret.push_back('"');
 
     for (size_t i = 0; i < len; ++i)
     {
-        auto ch = raw[i];
+        char ch = raw[i];
         switch (ch)
         {
             case '\a':
@@ -192,7 +114,7 @@ std::string& LuaHelper::BuildValue(std::string& builder, lua_State* L, int idx)
                                 break;
                             case LUA_TSTRING:
                                 key = lua_tostring(L, -2);
-                                if (IsIdentifier(key))
+                                if (IsLuaIdentifier(key))
                                 {
                                     builder.append(key);
                                     builder.push_back('=');

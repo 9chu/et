@@ -18,7 +18,7 @@ namespace
 
     bool IsStartingByNewLine(const std::string& text)
     {
-        for (auto ch : text)
+        for (char ch : text)
         {
             if (IsSpace(ch))
             {
@@ -50,7 +50,7 @@ namespace
     {
         for (size_t i = 0; i < text.length(); ++i)
         {
-            auto ch = text[i];
+            char ch = text[i];
             if (IsSpace(ch))
             {
                 if (ch == '\n')
@@ -68,7 +68,7 @@ namespace
     {
         while (!text.empty())
         {
-            auto last = text.back();
+            char last = text.back();
             if (IsSpace(last))
             {
                 text.pop_back();
@@ -87,6 +87,18 @@ const TemplateParser::Token& TemplateParser::GetTokenByIndex(size_t index)const 
 
     if (index >= m_stTokenList.size())
         return kEmptyToken;
+    return m_stTokenList[index];
+}
+
+TemplateParser::Token& TemplateParser::GetTokenByIndex(size_t index)noexcept
+{
+    static Token kEmptyToken {};
+
+    if (index >= m_stTokenList.size())
+    {
+        assert(false);
+        return kEmptyToken;
+    }
     return m_stTokenList[index];
 }
 
@@ -134,8 +146,8 @@ bool TemplateParser::TryAcceptIdentifierOrKeyword(std::string& out)
 
 bool TemplateParser::ParseOuter(Token& result)
 {
-    auto begin = GetReader()->GetPosition();
-    auto end = begin;
+    size_t begin = GetReader()->GetPosition();
+    size_t end = begin;
 
     result.Type = TokenTypes::Eof;
     result.Content.clear();
@@ -190,7 +202,9 @@ void TemplateParser::ParseInner(Token& result)
 
     if (TryAcceptIdentifierOrKeyword(m_stTmpBuffer))
     {
-        if (m_stTmpBuffer == "if")
+        if (m_stTmpBuffer == "end")
+            result.Type = TokenTypes::End;
+        else if (m_stTmpBuffer == "if")
             result.Type = TokenTypes::If;
         else if (m_stTmpBuffer == "else")
             result.Type = TokenTypes::Else;
@@ -208,7 +222,7 @@ void TemplateParser::ParseInner(Token& result)
             SkipBlank();
             if (!TryAcceptIdentifierOrKeyword(m_stTmpBuffer))
                 ET_PARSE_ERROR("Identifier expected, but found %s", PrintChar(c).c_str());
-            if (LuaHelper::IsKeyword(m_stTmpBuffer))
+            if (IsLuaKeyword(m_stTmpBuffer))
                 ET_PARSE_ERROR("Identifier expected, but found \"%s\"", m_stTmpBuffer.c_str());
             result.Args.emplace_back(std::move(m_stTmpBuffer));
 
@@ -219,7 +233,7 @@ void TemplateParser::ParseInner(Token& result)
                 SkipBlank();
                 if (!TryAcceptIdentifierOrKeyword(m_stTmpBuffer))
                     ET_PARSE_ERROR("Identifier expected, but found %s", PrintChar(c).c_str());
-                if (LuaHelper::IsKeyword(m_stTmpBuffer))
+                if (IsLuaKeyword(m_stTmpBuffer))
                     ET_PARSE_ERROR("Identifier expected, but found \"%s\"", m_stTmpBuffer.c_str());
                 result.Args.emplace_back(std::move(m_stTmpBuffer));
                 SkipBlank();
@@ -258,8 +272,19 @@ void TemplateParser::ParseInner(Token& result)
                 // 去除末尾的空白
                 TrimEnd(result.Content);
 
-                if (result.Type != TokenTypes::Expression && result.Content.empty())
-                    ET_PARSE_ERROR("%s", "Expression required after statement");  // Fix warning
+                bool shouldFollowingExpr = result.Type != TokenTypes::Expression && result.Type != TokenTypes::End &&
+                    result.Type != TokenTypes::Else; // 除去Else和End以外，后面必然有个Expression
+
+                if (shouldFollowingExpr)
+                {
+                    if (result.Content.empty())
+                        ET_PARSE_ERROR("Expression required after statement");
+                }
+                else
+                {
+                    if (result.Type != TokenTypes::Expression && !result.Content.empty())
+                        ET_PARSE_ERROR("Unexpected expression here");
+                }
                 return;
             }
             else if (c == '\0')
@@ -272,7 +297,7 @@ void TemplateParser::ParseInner(Token& result)
         Next();
     }
 
-    ET_PARSE_ERROR("%s", "Unclosed expression node");  // Fix warning
+    ET_PARSE_ERROR("Unclosed expression node");
 }
 
 void TemplateParser::Prettify()
@@ -282,9 +307,9 @@ void TemplateParser::Prettify()
 
     for (size_t i = 0; i < m_stTokenList.size(); ++i)
     {
-        const auto& current = m_stTokenList[i];
-        auto* prev = (i != 0 ? &m_stTokenList[i - 1] : nullptr);
-        auto* next = (i + 1 < m_stTokenList.size() ? &m_stTokenList[i + 1] : nullptr);
+        const Token& current = m_stTokenList[i];
+        Token* prev = (i != 0 ? &m_stTokenList[i - 1] : nullptr);
+        Token* next = (i + 1 < m_stTokenList.size() ? &m_stTokenList[i + 1] : nullptr);
 
         if (state == 0)
         {

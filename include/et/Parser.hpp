@@ -13,11 +13,9 @@
  */
 #define ET_PARSE_ERROR(format, ...) \
     do { \
-        if (GetReader()) { \
-            ET_THROW(ParseErrorException, "%s:%u:%u: " format, GetReader()->GetSourceName(), GetReader()->GetLine(), \
-                GetReader()->GetColumn(), ##__VA_ARGS__); \
-        } else \
-            ET_THROW(ParseErrorException, format, ##__VA_ARGS__); \
+        assert(GetReader()); \
+        ET_THROW(ParseErrorException, "%s:%u:%u: " format, GetReader()->GetSourceName(), GetReader()->GetLine(), \
+            GetReader()->GetColumn(), ##__VA_ARGS__); \
     } while (false)
 
 namespace et
