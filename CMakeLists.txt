@@ -22,6 +22,10 @@ add_library(et-static STATIC ${ET_SRC})
 target_link_libraries(et-static lua-static)
 target_include_directories(et-static PUBLIC include)
 
+add_executable(et-exec bin/Main.cpp)
+target_link_libraries(et-exec et-static lua-static)
+set_target_properties(et-exec PROPERTIES OUTPUT_NAME et)
+
 # 单元测试
 if (ET_ENABLE_TEST)
     enable_testing()
