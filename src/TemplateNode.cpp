@@ -13,6 +13,22 @@ using namespace et;
 
 static const char kReturn[] = "return ";
 
+namespace
+{
+    string SafeAssignString(const char* raw)
+    {
+        string ret;
+        try
+        {
+            ret.assign(raw);
+        }
+        catch (...)
+        {
+        }
+        return ret;
+    }
+}
+
 //////////////////////////////////////////////////////////////////////////////// TemplateNodeBase
 
 size_t TemplateNodeBase::GetNodeCount()const noexcept
@@ -151,7 +167,7 @@ void TemplateExpressionNode::Render(std::string& builder, lua_State* L, int env)
 
         if (ret != LUA_OK)
         {
-            string error = lua_tostring(L, -1);
+            string error = SafeAssignString(lua_tostring(L, -1));
             lua_pop(L, 1);
             ET_THROW(LuaRuntimeException, "%s:%u: %s", m_pszSource, m_uLine, error.c_str());
         }
@@ -170,7 +186,7 @@ void TemplateExpressionNode::Render(std::string& builder, lua_State* L, int env)
     ret = lua_pcall(L, 0, LUA_MULTRET, 0);
     if (ret != LUA_OK)
     {
-        string error = lua_tostring(L, -1);
+        string error = SafeAssignString(lua_tostring(L, -1));
         lua_pop(L, 1);
         ET_THROW(LuaRuntimeException, "%s:%u: %s", m_pszSource, m_uLine, error.c_str());
     }
@@ -296,7 +312,7 @@ void TemplateIfNode::Render(std::string& builder, lua_State* L, int env)const
     int ret = luaL_loadbufferx(L, m_stExpression.c_str(), m_stExpression.length(), "=(if)", "t");
     if (ret != LUA_OK)
     {
-        string error = lua_tostring(L, -1);
+        string error = SafeAssignString(lua_tostring(L, -1));
         lua_pop(L, 1);
         ET_THROW(LuaRuntimeException, "%s:%u: %s", m_pszSource, m_uLine, error.c_str());
     }
@@ -313,7 +329,7 @@ void TemplateIfNode::Render(std::string& builder, lua_State* L, int env)const
     ret = lua_pcall(L, 0, 1, 0);  // 只取第一个返回值
     if (ret != LUA_OK)
     {
-        string error = lua_tostring(L, -1);
+        string error = SafeAssignString(lua_tostring(L, -1));
         lua_pop(L, 1);
         ET_THROW(LuaRuntimeException, "%s:%u: %s", m_pszSource, m_uLine, error.c_str());
     }
@@ -405,7 +421,7 @@ void TemplateIfElseNode::Render(std::string& builder, lua_State* L, int env)cons
     int ret = luaL_loadbufferx(L, m_stExpression.c_str(), m_stExpression.length(), "=(if)", "t");
     if (ret != LUA_OK)
     {
-        string error = lua_tostring(L, -1);
+        string error = SafeAssignString(lua_tostring(L, -1));
         lua_pop(L, 1);
         ET_THROW(LuaRuntimeException, "%s:%u: %s", m_pszSource, m_uLine, error.c_str());
     }
@@ -422,7 +438,7 @@ void TemplateIfElseNode::Render(std::string& builder, lua_State* L, int env)cons
     ret = lua_pcall(L, 0, 1, 0);  // 只取第一个返回值
     if (ret != LUA_OK)
     {
-        string error = lua_tostring(L, -1);
+        string error = SafeAssignString(lua_tostring(L, -1));
         lua_pop(L, 1);
         ET_THROW(LuaRuntimeException, "%s:%u: %s", m_pszSource, m_uLine, error.c_str());
     }
@@ -516,7 +532,7 @@ void TemplateWhileNode::Render(std::string& builder, lua_State* L, int env)const
     int ret = luaL_loadbufferx(L, m_stExpression.c_str(), m_stExpression.length(), "=(while)", "t");
     if (ret != LUA_OK)
     {
-        string error = lua_tostring(L, -1);
+        string error = SafeAssignString(lua_tostring(L, -1));
         lua_pop(L, 1);
         ET_THROW(LuaRuntimeException, "%s:%u: %s", m_pszSource, m_uLine, error.c_str());
     }
@@ -543,7 +559,7 @@ void TemplateWhileNode::Render(std::string& builder, lua_State* L, int env)const
         ret = lua_pcall(L, 0, 1, 0);  // 只取第一个返回值
         if (ret != LUA_OK)
         {
-            string error = lua_tostring(L, -1);
+            string error = SafeAssignString(lua_tostring(L, -1));
             lua_pop(L, 1);
             ET_THROW(LuaRuntimeException, "%s:%u: %s", m_pszSource, m_uLine, error.c_str());
         }
@@ -666,7 +682,7 @@ void TemplateForNode::Render(std::string& builder, lua_State* L, int env)const
     int ret = luaL_loadbufferx(L, m_stExpression.c_str(), m_stExpression.length(), "=(for)", "t");
     if (ret != LUA_OK)
     {
-        string error = lua_tostring(L, -1);
+        string error = SafeAssignString(lua_tostring(L, -1));
         lua_settop(L, base);  // 平衡堆栈
         ET_THROW(LuaRuntimeException, "%s:%u: %s", m_pszSource, m_uLine, error.c_str());
     }
@@ -683,7 +699,7 @@ void TemplateForNode::Render(std::string& builder, lua_State* L, int env)const
     ret = lua_pcall(L, 0, 3, 0);  // For迭代器首次执行后会返回三个值
     if (ret != LUA_OK)
     {
-        string error = lua_tostring(L, -1);
+        string error = SafeAssignString(lua_tostring(L, -1));
         lua_settop(L, base);  // 平衡堆栈
         ET_THROW(LuaRuntimeException, "%s:%u: %s", m_pszSource, m_uLine, error.c_str());
     }
@@ -703,7 +719,7 @@ void TemplateForNode::Render(std::string& builder, lua_State* L, int env)const
         ret = lua_pcall(L, 2, static_cast<int>(m_vecArgs.size()), 0);
         if (ret != LUA_OK)
         {
-            string error = lua_tostring(L, -1);
+            string error = SafeAssignString(lua_tostring(L, -1));
             lua_settop(L, base);  // 平衡堆栈
             ET_THROW(LuaRuntimeException, "%s:%u: %s", m_pszSource, m_uLine, error.c_str());
         }
