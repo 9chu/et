@@ -216,6 +216,18 @@ TEST(TemplateParserTest, ParseInner)
     }
 
     {
+        EXPECT_THROW(DO_PARSE("{% end %"), ParseErrorException);
+    }
+
+    {
+        EXPECT_THROW(DO_PARSE("{% end %%"), ParseErrorException);
+    }
+
+    {
+        EXPECT_THROW(DO_PARSE("{% end "), ParseErrorException);
+    }
+
+    {
         EXPECT_THROW(DO_PARSE("{% end x %}"), ParseErrorException);
     }
 
