@@ -167,24 +167,24 @@ void et::ReadFile(std::string& out, const char* path)
 
     ifstream t(path, ios::binary);
     if (!t.good())
-        ET_THROW(IOException, "Open file \"{0}\" error", path);
+        ET_THROW(IOException, "Open file \"%s\" error", path);
 
     t.seekg(0, std::ios::end);
     if (!t.good())
-        ET_THROW(IOException, "Seek to end on file \"{0}\" error", path);
+        ET_THROW(IOException, "Seek to end on file \"%s\" error", path);
 
     auto size = t.tellg();
     if (size < 0)
-        ET_THROW(IOException, "Tellg on file \"{0}\" error", path);
+        ET_THROW(IOException, "Tellg on file \"%s\" error", path);
     out.reserve(size);
 
     t.seekg(0, std::ios::beg);
     if (!t.good())
-        ET_THROW(IOException, "Seek to begin on file \"{0}\" error", path);
+        ET_THROW(IOException, "Seek to begin on file \"%s\" error", path);
 
     out.assign((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
     if (out.length() != (size_t)size)
-        ET_THROW(IOException, "Read file \"{0}\" error", path);
+        ET_THROW(IOException, "Read file \"%s\" error", path);
 }
 
 //////////////////////////////////////////////////////////////////////////////// Exception
