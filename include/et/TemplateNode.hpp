@@ -4,8 +4,9 @@
  * @date 2018/1/7
  */
 #pragma once
-#include "LuaHelper.hpp"
 #include "TemplateParser.hpp"
+
+#include <lua.hpp>
 
 namespace et
 {

@@ -4,7 +4,6 @@
  * @date 2018/1/7
  */
 #include <et/TemplateParser.hpp>
-#include <et/LuaHelper.hpp>
 
 using namespace std;
 using namespace et;

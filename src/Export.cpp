@@ -17,6 +17,8 @@ static const char kHexDigitTable[16] = {
 
 namespace
 {
+    static int LuaIsArray(lua_State* L)noexcept;
+
     static int LuaRenderString(lua_State* L)noexcept  // input: string, [sourceName: string], [env: table]
     {
         const char* input = luaL_checkstring(L, 1);
@@ -234,70 +236,103 @@ namespace
 
                     bool firstPair = true;
                     const char* key = nullptr;
+                    bool isArray = false;
 
-                    lua_pushnil(L);
-                    while (lua_next(L, 1) != 0)  // key在top - 2，value在top - 1
+                    lua_pushcfunction(L, LuaIsArray);  // t s f
+                    lua_pushvalue(L, 1);  // t s f t
+                    lua_call(L, 1, 1);  // t s b
+                    isArray = static_cast<bool>(lua_toboolean(L, -1));
+                    lua_pop(L, 1);  // t s
+
+                    if (isArray)
                     {
-                        int valueIdx = lua_gettop(L);  // value的位置
-                        int keyIdx = valueIdx - 1;
+                        lua_len(L, 1);
+                        lua_Integer len = luaL_checkinteger(L, -1);
+                        lua_pop(L, 1);
 
-                        // 复制上一次合并结果
-                        lua_pushvalue(L, base);  // key, value, '{'
-
-                        // 决定是否加上逗号
-                        if (firstPair)
-                            firstPair = false;
-                        else
-                            lua_pushstring(L, ", ");
-
-                        // 导出Key
-                        switch (lua_type(L, keyIdx))
+                        for (lua_Integer i = 1; i <= len; ++i)
                         {
-                            case LUA_TBOOLEAN:
-                                lua_pushstring(L, "[");
-                                lua_pushstring(L, lua_toboolean(L, keyIdx) ? "true" : "false");
-                                lua_pushstring(L, "]=");
-                                break;
-                            case LUA_TNUMBER:
-                                lua_pushstring(L, "[");
-                                lua_pushvalue(L, keyIdx);
-                                lua_tostring(L, -1);
-                                lua_pushstring(L, "]=");
-                                break;
-                            case LUA_TSTRING:
-                                key = lua_tostring(L, keyIdx);
-                                if (IsLuaIdentifier(key))
-                                {
-                                    lua_pushvalue(L, keyIdx);
-                                    lua_pushstring(L, "=");
-                                }
-                                else
-                                {
-                                    lua_pushstring(L, "[");
-                                    lua_pushcfunction(L, LuaDumpString);
-                                    lua_pushvalue(L, keyIdx);
-                                    lua_call(L, 1, 1);
-                                    lua_pushstring(L, "]=");
-                                }
-                                break;
-                            default:
-                                luaL_error(L, "Unexpected key of type \"%s\"", luaL_typename(L, keyIdx));
-                                return 0;
+                            // 决定是否加上逗号
+                            if (firstPair)
+                                firstPair = false;
+                            else
+                                lua_pushstring(L, ", ");
+
+                            // 只导出Value
+                            lua_pushcfunction(L, LuaDumpValue);  // t s f
+                            lua_geti(L, 1, i);  // t s f a
+                            lua_call(L, 1, 1);  // t s s
+
+                            // 合并所有字符串
+                            lua_concat(L, lua_gettop(L) - 1);
                         }
+                    }
+                    else
+                    {
+                        lua_pushnil(L);
+                        while (lua_next(L, 1) != 0)  // key在top - 2，value在top - 1
+                        {
+                            int valueIdx = lua_gettop(L);  // value的位置
+                            int keyIdx = valueIdx - 1;
 
-                        // 导出Value
-                        lua_pushcfunction(L, LuaDumpValue);
-                        lua_pushvalue(L, valueIdx);
-                        lua_call(L, 1, 1);
+                            // 复制上一次合并结果
+                            lua_pushvalue(L, base);  // key, value, '{'
 
-                        // 合并所有字符串
-                        lua_concat(L, lua_gettop(L) - valueIdx);
+                            // 决定是否加上逗号
+                            if (firstPair)
+                                firstPair = false;
+                            else
+                                lua_pushstring(L, ", ");
 
-                        // 删除之前的结果
-                        lua_remove(L, base);
-                        lua_insert(L, base);
+                            // 导出Key
+                            switch (lua_type(L, keyIdx))
+                            {
+                                case LUA_TBOOLEAN:
+                                    lua_pushstring(L, "[");
+                                    lua_pushstring(L, lua_toboolean(L, keyIdx) ? "true" : "false");
+                                    lua_pushstring(L, "]=");
+                                    break;
+                                case LUA_TNUMBER:
+                                    lua_pushstring(L, "[");
+                                    lua_pushvalue(L, keyIdx);
+                                    lua_tostring(L, -1);
+                                    lua_pushstring(L, "]=");
+                                    break;
+                                case LUA_TSTRING:
+                                    key = lua_tostring(L, keyIdx);
+                                    if (IsLuaIdentifier(key))
+                                    {
+                                        lua_pushvalue(L, keyIdx);
+                                        lua_pushstring(L, "=");
+                                    }
+                                    else
+                                    {
+                                        lua_pushstring(L, "[");
+                                        lua_pushcfunction(L, LuaDumpString);
+                                        lua_pushvalue(L, keyIdx);
+                                        lua_call(L, 1, 1);
+                                        lua_pushstring(L, "]=");
+                                    }
+                                    break;
+                                default:
+                                    luaL_error(L, "Unexpected key of type \"%s\"", luaL_typename(L, keyIdx));
+                                    return 0;
+                            }
 
-                        lua_pop(L, 1);  // 去掉Value，保留栈顶的Key继续进行遍历
+                            // 导出Value
+                            lua_pushcfunction(L, LuaDumpValue);
+                            lua_pushvalue(L, valueIdx);
+                            lua_call(L, 1, 1);
+
+                            // 合并所有字符串
+                            lua_concat(L, lua_gettop(L) - valueIdx);
+
+                            // 删除之前的结果
+                            lua_remove(L, base);
+                            lua_insert(L, base);
+
+                            lua_pop(L, 1);  // 去掉Value，保留栈顶的Key继续进行遍历
+                        }
                     }
                 }
 
@@ -373,6 +408,41 @@ namespace
             return 3;
         }
     }
+
+    static int LuaIsArray(lua_State* L)noexcept  // any
+    {
+        if (lua_gettop(L) == 0 || lua_type(L, 1) != LUA_TTABLE)
+        {
+            lua_pushboolean(L, false);
+            return 1;
+        }
+
+        lua_Integer minIndex = std::numeric_limits<lua_Integer>::max();
+        lua_Integer maxIndex = std::numeric_limits<lua_Integer>::min();
+        size_t count = 0;
+
+        lua_pushnil(L);  // t n
+        while (lua_next(L, 1) != 0)  // t k v
+        {
+            lua_pop(L, 1);
+
+            if (1 != lua_isinteger(L, -1))
+            {
+                lua_pop(L, 1);
+
+                lua_pushboolean(L, false);
+                return 1;
+            }
+
+            lua_Integer idx = lua_tointeger(L, -1);
+            minIndex = std::min(minIndex, idx);
+            maxIndex = std::max(maxIndex, idx);
+            ++count;
+        }
+
+        lua_pushboolean(L, count == 0 || (minIndex == 1 && maxIndex == count));
+        return 1;
+    }
 }
 
 extern "C" int ET_EXPORT_API luaopen_et(lua_State* L)
@@ -383,6 +453,7 @@ extern "C" int ET_EXPORT_API luaopen_et(lua_State* L)
         { "dump_string", LuaDumpString },
         { "dump_value", LuaDumpValue },
         { "range", LuaRange },
+        { "is_array", LuaIsArray },
     };
 
     luaL_newlib(L, kEntry);
