@@ -51,6 +51,10 @@ hello world!
 
     构造一个迭代器。
 
+- et.is_array(any) -> boolean
+
+    检查是否是一个数组。
+
 ## LICENSE
 
 MIT LICENSE
