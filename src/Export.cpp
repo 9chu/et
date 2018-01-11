@@ -454,6 +454,7 @@ extern "C" int ET_EXPORT_API luaopen_et(lua_State* L)
         { "dump_value", LuaDumpValue },
         { "range", LuaRange },
         { "is_array", LuaIsArray },
+        { nullptr, nullptr },
     };
 
     luaL_newlib(L, kEntry);
