@@ -342,7 +342,7 @@ void TemplateIfNode::Render(std::string& builder, lua_State* L, int env)const
     if (result)
     {
         for (const auto& node : m_vecTrueBranchNodes)
-            node->Render(builder, L);
+            node->Render(builder, L, env);
     }
 }
 
@@ -451,12 +451,12 @@ void TemplateIfElseNode::Render(std::string& builder, lua_State* L, int env)cons
     if (result)
     {
         for (const auto& node : m_vecTrueBranchNodes)
-            node->Render(builder, L);
+            node->Render(builder, L, env);
     }
     else  // 否则执行FalseBranch
     {
         for (const auto& node : m_vecFalseBranchNodes)
-            node->Render(builder, L);
+            node->Render(builder, L, env);
     }
 }
 
@@ -578,7 +578,7 @@ void TemplateWhileNode::Render(std::string& builder, lua_State* L, int env)const
             try
             {
                 for (const auto &node : m_vecNodes)
-                    node->Render(builder, L);
+                    node->Render(builder, L, env);
             }
             catch (...)
             {
@@ -747,7 +747,7 @@ void TemplateForNode::Render(std::string& builder, lua_State* L, int env)const
         try
         {
             for (const auto &node : m_vecNodes)
-                node->Render(builder, L);
+                node->Render(builder, L, env);
         }
         catch (...)
         {

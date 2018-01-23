@@ -90,7 +90,7 @@ namespace et
          * @param L LUA环境
          * @param env 环境Table索引，当0时不设置ENV
          */
-        virtual void Render(std::string& builder, lua_State* L, int env=0)const = 0;
+        virtual void Render(std::string& builder, lua_State* L, int env)const = 0;
 
     protected:
         TemplateNodeBase* m_pParent = nullptr;
