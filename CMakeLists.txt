@@ -17,7 +17,7 @@ set_target_properties(et PROPERTIES OUTPUT_NAME "et")
 if (WIN32)
     target_link_libraries(et lua-shared)
 else ()
-    get_target_property(LUA_INCLUDE_DIRS lua INTERFACE_INCLUDE_DIRECTORIES)
+    get_target_property(LUA_INCLUDE_DIRS lua-shared INTERFACE_INCLUDE_DIRECTORIES)
     target_include_directories(et PRIVATE ${LUA_INCLUDE_DIRS})
 
     if (APPLE)
