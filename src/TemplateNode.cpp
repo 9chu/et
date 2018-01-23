@@ -675,8 +675,16 @@ void TemplateForNode::Render(std::string& builder, lua_State* L, int env)const
     int base = lua_gettop(L);
 
     // 保存Args
-    for (const auto& name : m_vecArgs)
-        lua_getglobal(L, name.c_str());
+    if (env != 0)
+    {
+        for (const auto& name : m_vecArgs)
+            lua_getfield(L, env, name.c_str());
+    }
+    else
+    {
+        for (const auto& name : m_vecArgs)
+            lua_getglobal(L, name.c_str());
+    }
 
     // 编译语句
     int ret = luaL_loadbufferx(L, m_stExpression.c_str(), m_stExpression.length(), "=(for)", "t");
@@ -732,12 +740,23 @@ void TemplateForNode::Render(std::string& builder, lua_State* L, int env)const
             break;
 
         // 依次保存结果，直到最后一个
-        for (size_t i = m_vecArgs.size() - 1; i > 0; --i)
-            lua_setglobal(L, m_vecArgs[i].c_str());
+        if (env == 0)
+        {
+            for (size_t i = m_vecArgs.size() - 1; i > 0; --i)
+                lua_setglobal(L, m_vecArgs[i].c_str());
+        }
+        else
+        {
+            for (size_t i = m_vecArgs.size() - 1; i > 0; --i)
+                lua_setfield(L, env, m_vecArgs[i].c_str());
+        }
 
         // 最后一个需要复制并赋值
         lua_pushvalue(L, -1);
-        lua_setglobal(L, m_vecArgs[0].c_str());
+        if (env == 0)
+            lua_setglobal(L, m_vecArgs[0].c_str());
+        else
+            lua_setfield(L, env, m_vecArgs[0].c_str());
 
         // 此时堆栈为
         // arg1bak, arg2bak, ..., argnbak, f, s, arg1
@@ -755,8 +774,16 @@ void TemplateForNode::Render(std::string& builder, lua_State* L, int env)const
             lua_pop(L, 3);
 
             // 依次恢复值
-            for (auto it = m_vecArgs.rbegin(); it != m_vecArgs.rend(); ++it)
-                lua_setglobal(L, it->c_str());
+            if (env == 0)
+            {
+                for (auto it = m_vecArgs.rbegin(); it != m_vecArgs.rend(); ++it)
+                    lua_setglobal(L, it->c_str());
+            }
+            else
+            {
+                for (auto it = m_vecArgs.rbegin(); it != m_vecArgs.rend(); ++it)
+                    lua_setfield(L, env, it->c_str());
+            }
 
             assert(lua_gettop(L) == base);
             throw;
@@ -776,8 +803,16 @@ void TemplateForNode::Render(std::string& builder, lua_State* L, int env)const
     lua_pop(L, m_vecArgs.size() + 2);
 
     // 依次恢复值
-    for (auto it = m_vecArgs.rbegin(); it != m_vecArgs.rend(); ++it)
-        lua_setglobal(L, it->c_str());
+    if (env == 0)
+    {
+        for (auto it = m_vecArgs.rbegin(); it != m_vecArgs.rend(); ++it)
+            lua_setglobal(L, it->c_str());
+    }
+    else
+    {
+        for (auto it = m_vecArgs.rbegin(); it != m_vecArgs.rend(); ++it)
+            lua_setfield(L, env, it->c_str());
+    }
 
     assert(lua_gettop(L) == base);
 }

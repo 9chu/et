@@ -14,12 +14,15 @@
 #include <stdexcept>
 #include <algorithm>
 
-#ifndef _MSC_VER
-#define ET_C_FORMAT_DECL(start, args) __attribute__((format(printf, start, args)))
-#define ET_EXPORT_API
-#else
+#if defined(_MSC_VER)
 #define ET_C_FORMAT_DECL(start, args)
 #define ET_EXPORT_API __declspec(dllexport)
+#elif defined(__MINGW32__)
+#define ET_C_FORMAT_DECL(start, args) __attribute__((format(printf, start, args)))
+#define ET_EXPORT_API __declspec(dllexport)
+#else
+#define ET_C_FORMAT_DECL(start, args) __attribute__((format(printf, start, args)))
+#define ET_EXPORT_API
 #endif
 
 #define ET_THROW(exception, format, ...) \
